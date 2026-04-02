@@ -1,0 +1,137 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: linear-gradient(180deg, #f0f5ff 0%, #ffffff 100%);
+}
+
+/* 浅色主题输入框 */
+.input-light {
+  @apply w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none transition-colors;
+}
+
+.input-light:disabled {
+  @apply bg-gray-50 cursor-not-allowed;
+}
+
+/* 浅色主题按钮 */
+.btn-primary {
+  @apply px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
+}
+
+.btn-secondary {
+  @apply px-4 py-2 bg-white hover:bg-gray-50 text-gray-700 text-sm font-medium rounded-md border border-gray-300 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
+}
+
+/* 区块标题 */
+.section-title {
+  @apply flex items-center gap-2 text-sm font-semibold text-gray-900;
+}
+
+.section-title::before {
+  content: '';
+  @apply w-1 h-4 bg-blue-600 rounded;
+}
+
+/* 表单标签 */
+.form-label {
+  @apply block text-sm font-medium text-gray-700 mb-1.5;
+}
+
+.form-label-required {
+  @apply form-label before:content-['*'] before:text-red-500 before:mr-1;
+}
+
+/* 卡片容器 */
+.card-light {
+  @apply bg-white rounded-lg border border-gray-200 shadow-sm;
+}
+
+/* 单选/复选框样式 */
+.radio-light {
+  @apply w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500;
+}
+
+/* 分割线 */
+.divider-light {
+  @apply h-px bg-gray-200 my-4;
+}
+
+/* JSON 树浅色主题 */
+.json-tree-key {
+  color: #0066cc;
+}
+
+.json-tree-string {
+  color: #22863a;
+}
+
+.json-tree-number {
+  color: #005cc5;
+}
+
+.json-tree-boolean {
+  color: #d73a49;
+}
+
+.json-tree-null {
+  color: #6a737d;
+}
+
+.json-tree-bracket {
+  color: #24292e;
+}
+
+/* 动画效果 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-5px);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(5px);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.4s ease-out;
+}
+
+.animate-shake {
+  animation: shake 0.5s;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.animate-bounce {
+  animation: bounce 1s ease-in-out infinite;
+}
