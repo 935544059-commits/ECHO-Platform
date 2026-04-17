@@ -69,6 +69,18 @@ function AppContent() {
       errors.push('Bearer Token 不能为空');
     }
     
+    // 校验入参：必须配置一个关联了 {{USER_INPUT}} 的入参
+    const bodyTemplate = config.inputParams.bodyTemplate;
+    if (!bodyTemplate.includes('{{USER_INPUT}}')) {
+      errors.push('必须配置一个关联了 {{USER_INPUT}} 的入参');
+    }
+    
+    // 校验出参：必须配置了『主回复』的出参
+    const renderBindings = config.renderBindings || {};
+    if (!renderBindings.mainContent) {
+      errors.push('必须配置了「主回复」的出参');
+    }
+    
     return errors;
   };
 

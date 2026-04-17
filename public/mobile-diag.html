@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>🔍 ECHO 移动诊断</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 15px;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .header {
+      text-align: center;
+      color: white;
+      margin-bottom: 20px;
+    }
+
+    .header h1 {
+      font-size: 24px;
+      margin-bottom: 5px;
+    }
+
+    .header p {
+      font-size: 14px;
+      opacity: 0.9;
+    }
+
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 15px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1a1a1a;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .status-item {
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+
+    .status-success {
+      background: #d4edda;
+      color: #155724;
+      border-left: 4px solid #28a745;
+    }
+
+    .status-error {
+      background: #f8d7da;
+      color: #721c24;
+      border-left: 4px solid #dc3545;
+    }
+
+    .status-warning {
+      background: #fff3cd;
+      color: #856404;
+      border-left: 4px solid #ffc107;
+    }
+
+    .status-info {
+      background: #d1ecf1;
+      color: #0c5460;
+      border-left: 4px solid #17a2b8;
+    }
+
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 14px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin-bottom: 10px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .btn-primary:active {
+      transform: scale(0.98);
+    }
+
+    .btn-secondary {
+      background: #f8f9fa;
+      color: #333;
+      border: 2px solid #e9ecef;
+    }
+
+    .btn-danger {
+      background: #dc3545;
+      color: white;
+    }
+
+    .log-box {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 12px;
+      max-height: 300px;
+      overflow-y: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      border: 1px solid #e9ecef;
+    }
+
+    .log-entry {
+      padding: 4px 0;
+      border-bottom: 1px solid #e9ecef;
+    }
+
+    .log-entry:last-child {
+      border-bottom: none;
+    }
+
+    .log-error { color: #dc3545; }
+    .log-warn { color: #ffc107; }
+    .log-info { color: #17a2b8; }
+    .log-success { color: #28a745; }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      font-size: 13px;
+    }
+
+    .info-item {
+      padding: 8px;
+      background: #f8f9fa;
+      border-radius: 6px;
+    }
+
+    .info-label {
+      font-weight: 600;
+      color: #666;
+      font-size: 11px;
+      margin-bottom: 4px;
+    }
+
+    .info-value {
+      color: #333;
+      word-break: break-all;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px 20px;
+      color: white;
+    }
+
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 15px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .progress-bar {
+      height: 6px;
+      background: #e9ecef;
+      border-radius: 3px;
+      overflow: hidden;
+      margin: 15px 0;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+      width: 0%;
+      transition: width 0.3s;
+    }
+
+    .icon {
+      font-size: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🔍 ECHO 移动诊断</h1>
+      <p>快速检测应用状态</p>
+    </div>
+
+    <div id="loading" class="loading">
+      <div class="loading-spinner"></div>
+      <p>正在诊断...</p>
+    </div>
+
+    <div id="content" style="display: none;">
+      <!-- 基础信息 -->
+      <div class="card">
+        <div class="card-title">
+          <span class="icon">📱</span>
+          设备信息
+        </div>
+        <div class="info-grid" id="device-info"></div>
+      </div>
+
+      <!-- 网络状态 -->
+      <div class="card">
+        <div class="card-title">
+          <span class="icon">🌐</span>
+          网络状态
+        </div>
+        <div id="network-status"></div>
+      </div>
+
+      <!-- 资源加载 -->
+      <div class="card">
+        <div class="card-title">
+          <span class="icon">📦</span>
+          资源加载
+        </div>
+        <div id="resource-status"></div>
+      </div>
+
+      <!-- 功能测试 -->
+      <div class="card">
+        <div class="card-title">
+          <span class="icon">⚡</span>
+          功能测试
+        </div>
+        <button class="btn btn-primary" onclick="testMainApp()">测试主应用</button>
+        <button class="btn btn-secondary" onclick="testNetwork()">测试网络请求</button>
+        <button class="btn btn-secondary" onclick="clearCache()">清除缓存</button>
+      </div>
+
+      <!-- 实时日志 -->
+      <div class="card">
+        <div class="card-title">
+          <span class="icon">📝</span>
+          诊断日志
+        </div>
+        <div class="log-box" id="log-box"></div>
+      </div>
+
+      <!-- 操作按钮 -->
+      <div class="card">
+        <div class="card-title">
+          <span class="icon">🔧</span>
+          快速操作
+        </div>
+        <button class="btn btn-primary" onclick="window.location.href='/'">访问主页</button>
+        <button class="btn btn-secondary" onclick="window.location.reload()">刷新页面</button>
+        <button class="btn btn-danger" onclick="reportIssue()">报告问题</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const logs = [];
+    let startTime = Date.now();
+
+    function log(message, type = 'info') {
+      const timestamp = new Date().toLocaleTimeString('zh-CN');
+      const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+      const logEntry = {
+        time: `[${elapsed}s]`,
+        message,
+        type
+      };
+      logs.push(logEntry);
+      
+      const logBox = document.getElementById('log-box');
+      const logDiv = document.createElement('div');
+      logDiv.className = `log-entry log-${type}`;
+      logDiv.textContent = `${logEntry.time} ${message}`;
+      logBox.appendChild(logDiv);
+      logBox.scrollTop = logBox.scrollHeight;
+
+      console.log(`[诊断] ${message}`);
+    }
+
+    function updateProgress(percent) {
+      const progressBar = document.querySelector('.progress-fill');
+      if (progressBar) {
+        progressBar.style.width = percent + '%';
+      }
+    }
+
+    function getDeviceInfo() {
+      const info = {
+        '用户代理': navigator.userAgent.substring(0, 50) + '...',
+        '平台': navigator.platform,
+        '语言': navigator.language,
+        '屏幕': `${window.screen.width}x${window.screen.height}`,
+        '视口': `${window.innerWidth}x${window.innerHeight}`,
+        '像素比': window.devicePixelRatio,
+        '触摸': 'ontouchstart' in window ? '支持' : '不支持',
+        '内存': navigator.deviceMemory ? `${navigator.deviceMemory}GB` : '未知',
+        '核心数': navigator.hardwareConcurrency || '未知',
+        '网络': navigator.onLine ? '在线' : '离线',
+        '连接': navigator.connection ? 
+          (navigator.connection.effectiveType || '未知') : '未知'
+      };
+
+      const deviceInfo = document.getElementById('device-info');
+      deviceInfo.innerHTML = '';
+      
+      for (const [key, value] of Object.entries(info)) {
+        deviceInfo.innerHTML += `
+          <div class="info-item">
+            <div class="info-label">${key}</div>
+            <div class="info-value">${value}</div>
+          </div>
+        `;
+      }
+    }
+
+    function checkNetwork() {
+      log('检查网络状态...', 'info');
+      const networkStatus = document.getElementById('network-status');
+      
+      const isOnline = navigator.onLine;
+      const connection = navigator.connection;
+      
+      let html = '';
+      
+      if (isOnline) {
+        html += `<div class="status-item status-success">
+          ✅ 网络连接正常
+        </div>`;
+        
+        if (connection) {
+          const type = connection.effectiveType || '未知';
+          const speed = connection.downlink ? `${connection.downlink} Mbps` : '未知';
+          
+          html += `<div class="status-item status-info">
+            📶 网络类型：${type.toUpperCase()}<br>
+            ⚡ 预估速度：${speed}
+          </div>`;
+          
+          log(`网络类型：${type}, 速度：${speed}`, 'info');
+        }
+      } else {
+        html += `<div class="status-item status-error">
+          ❌ 网络已断开
+        </div>`;
+        log('网络已断开', 'error');
+      }
+      
+      networkStatus.innerHTML = html;
+    }
+
+    function checkResources() {
+      log('检查资源加载...', 'info');
+      const resourceStatus = document.getElementById('resource-status');
+      
+      const resources = {
+        'CSS 样式': document.styleSheets.length > 0,
+        '本地存储': (() => {
+          try { return !!localStorage; } catch(e) { return false; }
+        })(),
+        '会话存储': (() => {
+          try { return !!sessionStorage; } catch(e) { return false; }
+        })(),
+        'Canvas': !!document.createElement('canvas').getContext,
+        'Fetch API': typeof fetch === 'function'
+      };
+
+      let html = '';
+      for (const [key, value] of Object.entries(resources)) {
+        html += `<div class="status-item status-${value ? 'success' : 'error'}">
+          ${value ? '✅' : '❌'} ${key}: ${value ? '正常' : '异常'}
+        </div>`;
+      }
+      
+      resourceStatus.innerHTML = html;
+      log('资源检查完成', 'success');
+    }
+
+    async function testMainApp() {
+      log('测试主应用...', 'info');
+      try {
+        const response = await fetch('/', {
+          method: 'GET',
+          mode: 'same-origin',
+          cache: 'no-cache'
+        });
+        
+        if (response.ok) {
+          log(`✅ 主应用可访问，状态码：${response.status}`, 'success');
+          alert('主应用测试通过！\n状态码：' + response.status + '\n\n如果仍然无法访问，可能是渲染问题。');
+        } else {
+          log(`❌ 主应用返回错误：${response.status}`, 'error');
+          alert('主应用测试失败！\n状态码：' + response.status);
+        }
+      } catch (error) {
+        log(`❌ 主应用测试失败：${error.message}`, 'error');
+        alert('主应用测试失败！\n错误：' + error.message);
+      }
+    }
+
+    async function testNetwork() {
+      log('测试网络请求...', 'info');
+      try {
+        const response = await fetch('https://httpbin.org/get', {
+          method: 'GET',
+          mode: 'cors'
+        });
+        
+        if (response.ok) {
+          log('✅ 外部网络请求成功', 'success');
+          alert('网络请求测试通过！\n可以正常访问外部 API');
+        } else {
+          log(`❌ 外部网络请求失败：${response.status}`, 'error');
+          alert('网络请求测试失败！\n状态码：' + response.status);
+        }
+      } catch (error) {
+        log(`❌ 网络请求失败：${error.message}`, 'error');
+        alert('网络请求测试失败！\n错误：' + error.message + '\n\n可能是网络限制或 CORS 问题。');
+      }
+    }
+
+    function clearCache() {
+      if (confirm('确定要清除缓存吗？\n\n这将清除：\n- 本地存储数据\n- 会话存储数据\n- 缓存文件')) {
+        log('清除缓存中...', 'info');
+        
+        try {
+          localStorage.clear();
+          sessionStorage.clear();
+          
+          if ('caches' in window) {
+            caches.keys().then(names => {
+              names.forEach(name => caches.delete(name));
+            });
+          }
+          
+          log('✅ 缓存已清除', 'success');
+          alert('缓存已清除！\n请刷新页面。');
+        } catch (error) {
+          log(`❌ 清除缓存失败：${error.message}`, 'error');
+          alert('清除缓存失败！\n错误：' + error.message);
+        }
+      }
+    }
+
+    function reportIssue() {
+      const report = {
+        time: new Date().toLocaleString('zh-CN'),
+        url: window.location.href,
+        device: navigator.userAgent,
+        screen: `${window.screen.width}x${window.screen.height}`,
+        network: navigator.onLine ? 'online' : 'offline',
+        logs: logs.map(l => `${l.time} ${l.message}`).join('\n')
+      };
+
+      const reportText = `
+🔍 ECHO 诊断报告
+时间：${report.time}
+URL: ${report.url}
+
+📱 设备信息
+${navigator.userAgent}
+
+📊 屏幕信息
+${report.screen}
+
+🌐 网络状态
+${report.network}
+
+📝 诊断日志
+${report.logs}
+      `.trim();
+
+      // 复制到剪贴板
+      navigator.clipboard.writeText(reportText).then(() => {
+        alert('✅ 诊断报告已复制到剪贴板！\n\n请粘贴发送给开发者。');
+        log('诊断报告已生成', 'success');
+      }).catch(() => {
+        // 如果剪贴板失败，显示报告
+        prompt('请复制以下诊断报告：', reportText);
+      });
+    }
+
+    // 初始化
+    window.addEventListener('DOMContentLoaded', () => {
+      log('诊断页面加载完成', 'success');
+      
+      setTimeout(() => {
+        getDeviceInfo();
+        checkNetwork();
+        checkResources();
+        
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('content').style.display = 'block';
+        
+        log('所有检查完成', 'success');
+      }, 500);
+    });
+
+    // 错误捕获
+    window.onerror = function(msg, url, line, col, error) {
+      log(`❌ 错误：${msg} (${line}:${col})`, 'error');
+      return false;
+    };
+
+    window.onunhandledrejection = function(event) {
+      log(`❌ 未处理 Promise: ${event.reason}`, 'error');
+    };
+  </script>
+</body>
+</html>

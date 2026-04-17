@@ -1,0 +1,58 @@
+{
+  "rewrites": [
+    {
+      "source": "/((?!api/.*).*)",
+      "destination": "/index.html",
+      "comments": "SPA 重定向，解决刷新 404 问题"
+    },
+    {
+      "source": "/api/proxy/:path*",
+      "destination": "https://api.dify.ai/v1/:path*"
+    },
+    {
+      "source": "/api/proxy/dify/:path*",
+      "destination": "https://api.dify.ai/v1/:path*"
+    },
+    {
+      "source": "/api/proxy/coze/:path*",
+      "destination": "https://api.coze.com/v1/:path*"
+    },
+    {
+      "source": "/api/proxy/jiutian/:path*",
+      "destination": "https://api.jiutian.cn/:path*"
+    },
+    {
+      "source": "/api/proxy/test/:path*",
+      "destination": "https://httpbin.org/:path*",
+      "comments": "测试端点"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/api/proxy/:path*",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, POST, PUT, DELETE, PATCH, OPTIONS"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "Content-Type, Authorization, X-API-Key, X-Bearer-Token, X-Target-Platform, X-Custom-Header"
+        },
+        {
+          "key": "Access-Control-Max-Age",
+          "value": "86400"
+        }
+      ]
+    }
+  ],
+  "functions": {
+    "api/proxy/**/*.js": {
+      "maxDuration": 10
+    }
+  }
+}
